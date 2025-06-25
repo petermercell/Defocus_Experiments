@@ -1,0 +1,332 @@
+#! /Applications/Nuke16.0v4/Nuke16.0v4.app/Contents/MacOS/libnuke-16.0.4.dylib -nx
+version 16.0 v4
+define_window_layout_xml {<?xml version="1.0" encoding="UTF-8"?>
+<layout version="1.0">
+    <window x="0" y="25" w="1440" h="797" maximized="1" screen="0">
+        <splitter orientation="1">
+            <split size="40"/>
+            <dock id="" hideTitles="1" activePageId="Toolbar.1">
+                <page id="Toolbar.1"/>
+            </dock>
+            <split size="777" stretch="1"/>
+            <splitter orientation="2">
+                <split size="456"/>
+                <dock id="" activePageId="Viewer.1">
+                    <page id="Viewer.1"/>
+                </dock>
+                <split size="321"/>
+                <dock id="" activePageId="DAG.1" focus="true">
+                    <page id="DAG.1"/>
+                    <page id="Curve Editor.1"/>
+                    <page id="DopeSheet.1"/>
+                </dock>
+            </splitter>
+            <split size="615"/>
+            <dock id="" activePageId="Properties.1">
+                <page id="Properties.1"/>
+                <page id="uk.co.thefoundry.backgroundrenderview.1"/>
+                <page id="Scenegraph.1"/>
+            </dock>
+        </splitter>
+    </window>
+</layout>
+}
+Root {
+ inputs 0
+ name /Users/g/Downloads/180625_MEGA_ZAUJIMAVE/FAKE_DEFOCUS_V001.nk
+ format "2048 1556 0 0 2048 1556 1 2K_Super_35(full-ap)"
+ proxy_type scale
+ proxy_format "1024 778 0 0 1024 778 1 1K_Super_35(full-ap)"
+ colorManagement OCIO
+ OCIO_config custom
+ customOCIOConfigPath /Users/g/.nuke/color/OCIOConfigs/configs/aces_1.2/config.ocio
+ defaultViewerLUT "OCIO LUTs"
+ workingSpaceLUT scene_linear
+ monitorLut "sRGB (ACES)"
+ monitorOutLUT "Rec.709 (ACES)"
+ int8Lut matte_paint
+ int16Lut texture_paint
+ logLut compositing_log
+ floatLut scene_linear
+}
+CheckerBoard2 {
+ inputs 0
+ name CheckerBoard4
+ xpos 10
+ ypos -69
+}
+Group {
+ name FAKE_DEFOCUS_PM
+ xpos 10
+ ypos 84
+ addUserKnob {20 User l FAKE_DEFOCUS_PM}
+ addUserKnob {41 senzor_width_ref l "Senzor width ref (mm)" T _BlurCirclesCalculator_1.senzor_width_ref}
+ addUserKnob {41 senzor_height_ref l "Senzor height ref (mm)" T _BlurCirclesCalculator_1.senzor_height_ref}
+ addUserKnob {41 focal_lens_ref l "Focal length ref (mm)" T _BlurCirclesCalculator_1.focal_lens_ref}
+ addUserKnob {41 fstop_ref l "Fstop ref" T _BlurCirclesCalculator_1.fstop_ref}
+ addUserKnob {26 ""}
+ addUserKnob {41 op l "DOF operator" T _BlurCirclesCalculator_1.op}
+ addUserKnob {26 ""}
+ addUserKnob {41 focus_distance_ref l "Focus distance (m)" T _BlurCirclesCalculator_1.focus_distance_ref}
+ addUserKnob {41 track T _BlurCirclesCalculator_1.track}
+ addUserKnob {41 track_enable l "enable track" -STARTLINE T _BlurCirclesCalculator_1.track_enable}
+ addUserKnob {26 ""}
+ addUserKnob {41 translate l "2D offset " T Transform2.translate}
+ addUserKnob {41 rotation l Rotation T _FocusGradient_1.rotation}
+ addUserKnob {26 ""}
+ addUserKnob {41 blurMult l "Blur size Mult" T ZDefocus2.blurMult}
+ addUserKnob {26 ""}
+ addUserKnob {26 _1 l "" +STARTLINE T "FAKE_DEFOCUS by Peter Mercell / 2025\nThis is just experiment"}
+ addUserKnob {26 ""}
+}
+ NoOp {
+  inputs 0
+  name FIT_LERP_Height1
+  xpos 90
+  ypos 121
+  addUserKnob {20 User}
+  addUserKnob {7 input_num l "Input Number:"}
+  input_num {{_BlurCirclesCalculator_1.track.y}}
+  addUserKnob {26 ""}
+  addUserKnob {7 orig_min l "Orig Min:"}
+  addUserKnob {7 orig_max l "Orig Max" -STARTLINE}
+  orig_max {{_FocusGradient_1.height}}
+  addUserKnob {26 ""}
+  addUserKnob {7 new_min l "New Min"}
+  addUserKnob {7 new_max l "New Max" -STARTLINE}
+  new_max 1
+  addUserKnob {26 ""}
+  addUserKnob {7 output l "Output number:"}
+  output {{"clamp((input_num - orig_min) / (orig_max - orig_min) * (new_max - new_min) + new_min, 0, 1)\n"}}
+ }
+ NoOp {
+  inputs 0
+  name FIT_LERP_hyperfocal1
+  xpos 202
+  ypos 121
+  addUserKnob {20 User}
+  addUserKnob {7 input_num l "Input Number:"}
+  input_num {{parent._BlurCirclesCalculator_1.focus_distance_ref}}
+  addUserKnob {26 ""}
+  addUserKnob {7 orig_min l "Orig Min:"}
+  addUserKnob {7 orig_max l "Orig Max" -STARTLINE}
+  orig_max {{_BlurCirclesCalculator_1.hyperfocal_ref}}
+  addUserKnob {26 ""}
+  addUserKnob {7 new_min l "New Min"}
+  addUserKnob {7 new_max l "New Max" -STARTLINE}
+  new_max 1
+  addUserKnob {26 ""}
+  addUserKnob {7 output l "Output number:"}
+  output {{"clamp((input_num - orig_min) / (orig_max - orig_min) * (new_max - new_min) + new_min, 0, 1)\n"}}
+ }
+ NoOp {
+  inputs 0
+  name _BlurCirclesCalculator_1
+  tile_color 0xff00ff
+  label "\[value maxDof]"
+  xpos 201
+  ypos 177
+  hide_input true
+  addUserKnob {20 User l BlurCirclesCalculator}
+  addUserKnob {26 ""}
+  addUserKnob {26 ""}
+  addUserKnob {12 track}
+  track {0 600}
+  addUserKnob {6 track_enable l "enable track" -STARTLINE}
+  addUserKnob {26 ""}
+  addUserKnob {26 ""}
+  addUserKnob {7 senzor_width_ref l "Senzor width ref (mm)" R 24 66.7}
+  senzor_width_ref 36
+  addUserKnob {7 focal_lens_ref l "Focal length ref (mm)" R 18 200}
+  focal_lens_ref 80
+  addUserKnob {7 fstop_ref l "Fstop ref" R 1 22}
+  fstop_ref 1.8
+  addUserKnob {26 ""}
+  addUserKnob {7 aov_ref l "AoV ref" +DISABLED +INVISIBLE}
+  aov_ref {{"2*(atan(senzor_width_ref/(2*focal_lens_ref)))*(180 / pi)"}}
+  addUserKnob {7 _AoV_Ref_ t " angle of view" R 10 360}
+  _AoV_Ref_ {{aov_ref}}
+  addUserKnob {26 ""}
+  addUserKnob {7 senzor_height_ref l "Senzor height ref (mm)" R 18 70}
+  senzor_height_ref 24
+  addUserKnob {7 coc_size_ref l "CoC size ref" t "sqrt(senzor_width_ref**2 + senzor_height_ref**2) / 1500"}
+  coc_size_ref {{"sqrt(senzor_width_ref**2 + senzor_height_ref**2) / 1500"}}
+  addUserKnob {7 hyperfocal_ref l "Hyperfocal ref (m)" t "focal_lens_ref**2 / (fstop_ref * coc_size_ref)" +DISABLED R 1 10}
+  hyperfocal_ref {{"focal_lens_ref**2 / (fstop_ref * coc_size_ref)*0.001"}}
+  addUserKnob {7 focus_distance_ref l "Focus distance (m)" R 1 100}
+  focus_distance_ref 38
+  addUserKnob {26 ""}
+  addUserKnob {7 near_focus_ref l "Near focus (m)" t "((hyperfocal_ref * focus_distance_ref) / (hyperfocal_ref + (focus_distance_ref - (focal_lens_ref*0.001))))" +DISABLED R 1 100}
+  near_focus_ref {{"((hyperfocal_ref * focus_distance_ref) / (hyperfocal_ref + (focus_distance_ref - (focal_lens_ref*0.001))))"}}
+  addUserKnob {7 far_focus_ref l "Far focus ref (m)" t "((hyperfocal_ref* focus_distance_ref)/(hyperfocal_ref - (focus_distance_ref - (focal_lens_ref*0.001))))" +DISABLED R 1 100}
+  far_focus_ref {{"((hyperfocal_ref * focus_distance_ref)/(hyperfocal_ref - (focus_distance_ref - (focal_lens_ref*0.001))))"}}
+  addUserKnob {7 dof_ref l "DOF ref (m)"}
+  dof_ref {{far_focus_ref-near_focus_ref}}
+  addUserKnob {26 ""}
+  addUserKnob {13 near_locator_ref l "Near locator ref (m)" t "-(focus_distance_ref - near_focus_ref)"}
+  near_locator_ref {0 0 {near_focus_ref}}
+  addUserKnob {13 far_locator_ref l "Far locator ref (m)" t "-(focus_distance_ref + far_focus_ref)"}
+  far_locator_ref {0 0 {far_focus_ref}}
+  addUserKnob {26 _1 l "" +STARTLINE}
+  addUserKnob {26 _2 l "" +STARTLINE}
+  addUserKnob {7 op R 1 30}
+  op 30
+  addUserKnob {7 object_distance_ref l "object distance" R 1 10}
+  object_distance_ref 1
+  addUserKnob {7 coc_real_ref l "CoC real life" t "((focal_lens_ref * focal_lens_ref) / (fstop_ref * ((focus_distance_ref * 1000) - focal_lens_ref))) * abs((object_distance_ref * 1000) - (focus_distance_ref * 1000)) / (object_distance_ref * 1000)\n" +DISABLED}
+  coc_real_ref {{"((focal_lens_ref * focal_lens_ref) / (fstop_ref * ((focus_distance_ref * 1000) - focal_lens_ref))) * abs((object_distance_ref * 1000) - (focus_distance_ref * 1000)) / (object_distance_ref * 1000)"}}
+  addUserKnob {7 maxDof l MaxDOF +DISABLED +INVISIBLE R 1 100}
+  maxDof {{hypFar-hypNear}}
+  addUserKnob {7 hypNear t "((hyperfocal_ref * hyperfocal_ref) / (hyperfocal_ref + (hyperfocal_ref - (focal_lens_ref*0.001))))" +DISABLED +INVISIBLE R 1 100}
+  hypNear {{"((hyperfocal_ref * hyperfocal_ref) / (hyperfocal_ref + (hyperfocal_ref - (focal_lens_ref*0.001))))"}}
+  addUserKnob {7 hypFar t "((hyperfocal_ref* hyperfocal_ref)/(hyperfocal_ref - (hyperfocal_ref - (focal_lens_ref*0.001))))" +DISABLED +INVISIBLE R 1 100}
+  hypFar {{"((hyperfocal_ref* hyperfocal_ref)/(hyperfocal_ref - (hyperfocal_ref - (focal_lens_ref*0.001))))\n"}}
+  addUserKnob {26 ""}
+  addUserKnob {26 ""}
+  addUserKnob {7 senzor_width l "Senzor width (mm)" R 24 66.7}
+  senzor_width 66.7
+  addUserKnob {7 focal_lens l "Focal length (mm)" R 18 200}
+  focal_lens 50
+  addUserKnob {7 fstop l Fstop +DISABLED +INVISIBLE R 1 22}
+  fstop {{fstop_ref*(senzor_width/senzor_width_ref)}}
+  addUserKnob {7 _fstop_ l _Fstop_ R 1 22}
+  _fstop_ {{fstop}}
+  addUserKnob {26 ""}
+  addUserKnob {7 aov l AoV +DISABLED +INVISIBLE}
+  aov {{"2*(atan(senzor_width/(2*focal_lens)))*(180 / pi)"}}
+  addUserKnob {7 _AoV_ R 10 360}
+  _AoV_ {{aov}}
+  addUserKnob {26 ""}
+  addUserKnob {7 senzor_height l "Senzor height (mm)" R 18 70}
+  senzor_height 48.5
+  addUserKnob {7 coc_size l "CoC size" t "sqrt(senzor_width**2 + senzor_height**2) / 1500" +DISABLED}
+  coc_size {{"sqrt(senzor_width**2 + senzor_height**2) / 1500"}}
+  addUserKnob {7 hyperfocal l "hyperfocal (m)" t "focal_lens**2 / (fstop * coc_size)*0.001" +DISABLED R 1 10}
+  hyperfocal {{"focal_lens**2 / (fstop * coc_size)*0.001"}}
+  addUserKnob {7 focus_distance l "Focus distance (m)" R 1 100}
+  focus_distance 1
+  addUserKnob {26 ""}
+  addUserKnob {7 near_focus l "Near focus (m)" t "((hyperfocal * focus_distance) / (hyperfocal + (focus_distance - (focal_lens*0.001))))" +DISABLED R 1 100}
+  near_focus {{"((hyperfocal * focus_distance) / (hyperfocal + (focus_distance - (focal_lens*0.001))))"}}
+  addUserKnob {7 far_focus l "Far focus (m)" t "((hyperfocal* focus_distance)/(hyperfocal - (focus_distance - (focal_lens*0.001))))" +DISABLED}
+  far_focus {{"((hyperfocal* focus_distance)/(hyperfocal - (focus_distance - (focal_lens*0.001))))"}}
+  addUserKnob {7 dof l "DOF (m)"}
+  dof {{far_focus-near_focus}}
+  addUserKnob {26 ""}
+  addUserKnob {13 near_locator l "Near locator (m)" t "-(focus_distance_ref - near_focus_ref)"}
+  near_locator {0 0 {near_focus}}
+  addUserKnob {13 far_locator l "Far locator (m)" t "-(focus_distance + far_focus)"}
+  far_locator {0 0 {far_focus}}
+  addUserKnob {26 ""}
+  addUserKnob {26 ""}
+ }
+ Input {
+  inputs 0
+  name IMG
+  xpos -215
+  ypos 129
+ }
+ Dot {
+  name Dot1
+  xpos -181
+  ypos 186
+ }
+set Ne7af800 [stack 0]
+ FocusGradient {
+  near_focus {{_BlurCirclesCalculator_1.near_focus_ref}}
+  focus_plane 0
+  far_focus {{_BlurCirclesCalculator_1.far_focus_ref}}
+  near_position 0
+  focus_position {{"_BlurCirclesCalculator_1.track_enable ? parent.FIT_LERP_Height1.output : parent.FIT_LERP_hyperfocal1.output"}}
+  far_position 0
+  near_pure_size 1
+  focus_pure_size {{abs(((_BlurCirclesCalculator_1.dof_ref/(_BlurCirclesCalculator_1.maxDof/_BlurCirclesCalculator_1.op))*_FocusGradient_1.height)*2)}}
+  far_pure_size 1
+  name _FocusGradient_1
+  xpos 90
+  ypos 183
+ }
+ Blur {
+  size 30
+  name Blur2
+  xpos 90
+  ypos 207
+ }
+ Expression {
+  temp_name0 fx
+  temp_expr0 "( x - translate.x ) * scale"
+  temp_name1 fy
+  temp_expr1 "( y -  translate.y ) * scale"
+  expr0 r(fx,fy)
+  expr1 r(fx,fy)
+  expr2 r(fx,fy)
+  name Transform2
+  xpos 90
+  ypos 251
+  addUserKnob {20 User}
+  addUserKnob {12 translate}
+  translate {0 300}
+  addUserKnob {7 scale R 0 10}
+  scale 1
+ }
+ Grade {
+  channels all
+  black_clamp false
+  name Grade2
+  xpos 90
+  ypos 315
+ }
+ Shuffle2 {
+  fromInput1 {
+   {0}
+   B
+  }
+  out1 depth
+  fromInput2 {
+   {0}
+   B
+  }
+  mappings "1 rgba.red 0 0 depth.Z 0 0"
+  name Shuffle1
+  xpos -84
+  ypos 319
+ }
+push $Ne7af800
+ Shuffle2 {
+  inputs 2
+  fromInput1 {
+   {0}
+   B
+   A
+  }
+  out1 depth
+  fromInput2 {
+   {1}
+   B
+   A
+  }
+  in2 depth
+  mappings "1 depth.Z 1 0 depth.Z 0 0"
+  name Shuffle3
+  xpos -215
+  ypos 319
+ }
+ ZDefocus2 {
+  math direct
+  fill_foreground false
+  focal_point {-24 -40}
+  size {{((_FocusGradient_1.width/_BlurCirclesCalculator_1.senzor_width_ref)*_BlurCirclesCalculator_1.coc_size_ref)*blurMult}}
+  max_size 100
+  name ZDefocus2
+  xpos -215
+  ypos 417
+  addUserKnob {20 User}
+  addUserKnob {7 blurMult l "Blur size Mult" R 1 100}
+  blurMult 0.5
+ }
+ Output {
+  name Output1
+  xpos -215
+  ypos 493
+ }
+end_group
